@@ -204,10 +204,10 @@ def main(medium_path, small_path):
     # Section 1 Part 6
     run_exp(small_path, False,  [1, 3, 5, 10, 20], "1-6.png", "normal")
     run_exp(small_path, True,  [1, 3, 5, 10, 20], "1-6-cosine.png", "normal")
-    run_exp(small_path, False,  [1, 3, 5, 10, 20], "1-6-gd.png", "normal")
-    run_exp(small_path, True,  [1, 3, 5, 10, 20], "1-6-gd-cosine.png", "normal")
-    run_exp(small_path, False,  [1, 3, 5, 10, 20], "1-6-sgd.png", "normal")
-    run_exp(small_path, True,  [1, 3, 5, 10, 20], "1-6-sgd-cosine.png", "normal")
+    run_exp(small_path, False,  [1, 3, 5, 10, 20], "1-6-gd.png", "gd", iterations=10000)
+    run_exp(small_path, True,  [1, 3, 5, 10, 20], "1-6-gd-cosine.png", "gd", iterations=10000)
+    run_exp(small_path, False,  [1, 3, 5, 10, 20], "1-6-sgd.png", "sgd", iterations=10000)
+    run_exp(small_path, True,  [1, 3, 5, 10, 20], "1-6-sgd-cosine.png", "sgd", iterations=10000)
     # *** END CODE HERE ***
 
 
