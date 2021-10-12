@@ -1,3 +1,5 @@
+# Jeremy Ng 500882192
+
 import math
 from operator import itemgetter
 import util
@@ -184,10 +186,12 @@ def main(medium_path, small_path):
     train_x, train_y = util.load_dataset(medium_path, add_intercept=True)
     run_exp(medium_path, False, [3], "1-3-gd-100.png", "gd", 0.01, 100)
     run_exp(medium_path, False, [3], "1-3-gd-1000.png", "gd", 0.01, 1000)
-    x2, y2 = run_exp(medium_path, False, [3], "1-3-gd-10000.png", "gd", 0.01, 10000)
+    x2, y2 = run_exp(medium_path, False, [
+                     3], "1-3-gd-10000.png", "gd", 0.01, 10000)
     run_exp(medium_path, False, [3], "1-3-sgd-100.png", "sgd", 0.01, 100)
     run_exp(medium_path, False, [3], "1-3-sgd-1000.png", "sgd", 0.01, 1000)
-    x3, y3 = run_exp(medium_path, False, [3], "1-3-sgd-10000.png", "sgd", 0.01, 10000)
+    x3, y3 = run_exp(medium_path, False, [
+                     3], "1-3-sgd-10000.png", "sgd", 0.01, 10000)
     plt.figure()
     plt.title("1-3")
     plt.scatter(train_x[:, 1], train_y)
@@ -204,10 +208,14 @@ def main(medium_path, small_path):
     # Section 1 Part 6
     run_exp(small_path, False,  [1, 3, 5, 10, 20], "1-6.png", "normal")
     run_exp(small_path, True,  [1, 3, 5, 10, 20], "1-6-cosine.png", "normal")
-    run_exp(small_path, False,  [1, 3, 5, 10, 20], "1-6-gd.png", "gd", iterations=10000)
-    run_exp(small_path, True,  [1, 3, 5, 10, 20], "1-6-gd-cosine.png", "gd", iterations=10000)
-    run_exp(small_path, False,  [1, 3, 5, 10, 20], "1-6-sgd.png", "sgd", iterations=10000)
-    run_exp(small_path, True,  [1, 3, 5, 10, 20], "1-6-sgd-cosine.png", "sgd", iterations=10000)
+    run_exp(small_path, False,  [1, 3, 5, 10, 20],
+            "1-6-gd.png", "gd", iterations=10000)
+    run_exp(small_path, True,  [1, 3, 5, 10, 20],
+            "1-6-gd-cosine.png", "gd", iterations=10000)
+    run_exp(small_path, False,  [1, 3, 5, 10, 20],
+            "1-6-sgd.png", "sgd", iterations=10000)
+    run_exp(small_path, True,  [1, 3, 5, 10, 20],
+            "1-6-sgd-cosine.png", "sgd", iterations=10000)
     # *** END CODE HERE ***
 
 

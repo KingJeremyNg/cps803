@@ -1,8 +1,12 @@
+# Jeremy Ng 500882192
+
 import numpy as np
 import util
 import sys
 
-### NOTE : You need to complete logreg implementation first!
+# NOTE : You need to complete logreg implementation first!
+
+
 class LogisticRegression:
     """Logistic regression with Newton's Method as the solver.
 
@@ -11,6 +15,7 @@ class LogisticRegression:
         > clf.fit(x_train, y_train)
         > clf.predict(x_eval)
     """
+
     def __init__(self, step_size=0.01, max_iter=1000000, eps=1e-5,
                  theta_0=None, verbose=True):
         """
@@ -35,6 +40,22 @@ class LogisticRegression:
             y: Training example labels. Shape (n_examples,).
         """
         # *** START CODE HERE ***
+        # TAKEN FROM D2L
+        n, d = x.shape
+        if self.theta is None:
+            self.theta = np.zeros(d, dtype=np.float32)
+        for i in range(self.max_iter):
+            grad = self._gradient(x, y)
+            hess = self._hessian(x)
+            prev_theta = np.copy(self.theta)
+            self.theta -= self.step_size * np.linalg.inv(hess).dot(grad)
+            loss = self._loss(x, y)
+            if self.verbose:
+                print('[iter: {:02d}, loss: {:.7f}]'.format(i, loss))
+            if np.max(np.abs(prev_theta - self.theta)) < self.eps:
+                break
+        if self.verbose:
+            print('Final theta (logreg): {}'.format(self.theta))
         # *** END CODE HERE ***
 
     def predict(self, x):
@@ -47,11 +68,69 @@ class LogisticRegression:
             Outputs of shape (n_examples,).
         """
         # *** START CODE HERE ***
+        # TAKEN FROM D2L
+        y_hat = self._sigmoid(x.dot(self.theta))
+        return y_hat
         # *** END CODE HERE ***
+
+    # TAKEN FROM D2L
+    def _gradient(self, x, y):
+        """Get gradient of J.
+
+        Returns:
+            grad: The gradient of J with respect to theta. Same shape as theta.
+        """
+        n, _ = x.shape
+        probs = self._sigmoid(x.dot(self.theta))
+        grad = 1 / n * x.T.dot(probs - y)
+        return grad
+
+    # TAKEN FROM D2L
+    def _hessian(self, x):
+        """Get the Hessian of J given theta and x.
+
+        Returns:
+            hess: The Hessian of J. Shape (dim, dim), where dim is dimension of theta.
+        """
+        n, _ = x.shape
+        probs = self._sigmoid(x.dot(self.theta))
+        diag = np.diag(probs * (1. - probs))
+        hess = 1 / n * x.T.dot(diag).dot(x)
+        return hess
+
+    # TAKEN FROM D2L
+    def _loss(self, x, y):
+        """Get the empirical loss for logistic regression."""
+        eps = 1e-10
+        hx = self._sigmoid(x.dot(self.theta))
+        loss = -np.mean(y * np.log(hx + eps) + (1 - y) * np.log(1 - hx + eps))
+        return loss
+
+    # TAKEN FROM D2L
+    @staticmethod
+    def _sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+
+
+# TAKEN FROM D2L
+def add_intercept(x):
+    """Add intercept to matrix x.
+
+    Args:
+        x: 2D NumPy array.
+
+    Returns:
+        New matrix same as x with 1's in the 0th column.
+    """
+    new_x = np.zeros((x.shape[0], x.shape[1] + 1), dtype=x.dtype)
+    new_x[:, 0] = 1
+    new_x[:, 1:] = x
+    return new_x
 
 
 # Character to replace with sub-problem letter in plot_path/save_path
 WILDCARD = 'X'
+outputPath = "../../output/"
 
 
 def main(train_path, valid_path, test_path, save_path):
@@ -75,14 +154,62 @@ def main(train_path, valid_path, test_path, save_path):
     # *** START CODE HERE ***
     # Part (a): Train and test on true labels
     # Make sure to save predicted probabilities to output_path_true using np.savetxt()
+    train_x, train_y = util.load_dataset(train_path, label_col="t")
+    test_x, test_y = util.load_dataset(test_path, label_col="t")
+
+    train_x_inter = add_intercept(train_x)
+    test_x_inter = add_intercept(test_x)
+
+    classifier = LogisticRegression(max_iter=1000, verbose=False)
+    classifier.fit(train_x_inter, train_y)
+
+    pred_y_prob = classifier.predict(test_x_inter)
+
+    util.plot(test_x, test_y, classifier.theta, outputPath + "2-1.png")
+    np.savetxt(output_path_true, pred_y_prob)
+
     # Part (b): Train on y-labels and test on true labels
     # Make sure to save predicted probabilities to output_path_naive using np.savetxt()
+    # label_col defaults to 'y'
+    train_x, train_y = util.load_dataset(train_path)
+    test_x, test_y = util.load_dataset(test_path)
+
+    train_x_inter = add_intercept(train_x)
+    test_x_inter = add_intercept(test_x)
+
+    classifier = LogisticRegression(max_iter=1000, verbose=False)
+    classifier.fit(train_x_inter, train_y)
+
+    pred_y_prob = classifier.predict(test_x_inter)
+
+    util.plot(test_x, test_y, classifier.theta, outputPath + "2-2.png")
+    np.savetxt(output_path_naive, pred_y_prob)
+
     # Part (f): Apply correction factor using validation set and test on true labels
     # Plot and use np.savetxt to save outputs to output_path_adjusted
+    # label_col defaults to 'y'
+    train_x, train_y = util.load_dataset(train_path)
+    test_x, test_y = util.load_dataset(test_path)
+    val_x, val_y = util.load_dataset(valid_path)
+
+    train_x_inter = add_intercept(train_x)
+    val_x_inter = add_intercept(val_x)
+
+    classifier = LogisticRegression(max_iter=1000, verbose=False)
+    classifier.fit(train_x_inter, train_y)
+
+    pred_y_prob = classifier.predict(val_x_inter)
+
+    correction = np.mean(pred_y_prob)
+
+    util.plot(test_x, test_y, classifier.theta,
+              outputPath + "2-6.png", correction)
+    np.savetxt(output_path_adjusted, pred_y_prob)
     # *** END CODER HERE
+
 
 if __name__ == '__main__':
     main(train_path='train.csv',
-        valid_path='valid.csv',
-        test_path='test.csv',
-        save_path='posonly_X_pred.txt')
+         valid_path='valid.csv',
+         test_path='test.csv',
+         save_path='../../output/posonly_X_pred.txt')
