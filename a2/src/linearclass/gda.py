@@ -15,8 +15,16 @@ def main(train_path, valid_path, save_path):
 
     # *** START CODE HERE ***
     # Train a GDA classifier
+    model = GDA()
+    model.fit(x_train, y_train)
+
     # Plot decision boundary on validation set
+    x_val, y_val = util.load_dataset(valid_path, add_intercept=True)
+    util.plot(x_val, y_val, model.theta, "../../output/" + save_path + '.png')
+
     # Use np.savetxt to save outputs from validation set to save_path
+    prediction = model.predict(x_val)
+    np.savetxt("../../output/" + save_path, prediction)
     # *** END CODE HERE ***
 
 
@@ -28,6 +36,7 @@ class GDA:
         > clf.fit(x_train, y_train)
         > clf.predict(x_eval)
     """
+
     def __init__(self, step_size=0.01, max_iter=10000, eps=1e-5,
                  theta_0=None, verbose=True):
         """
@@ -54,7 +63,24 @@ class GDA:
         """
         # *** START CODE HERE ***
         # Find phi, mu_0, mu_1, and sigma
+        y0 = sum([1 if i == 0 else 0 for i in y])
+        y1 = sum([1 if i == 1 else 0 for i in y])
+        phi = (y1 / len(x))
+        mu_0 = (sum([x[i] if y[i] == 0 else 0 for i in range(len(y))])) / y0
+        mu_1 = (sum([x[i] if y[i] == 1 else 0 for i in range(len(y))])) / y1
+        sigma = []
+        for i in range(len(y)):
+            if y[i]:
+                sigma += [sum([np.matmul(x[i] - mu_1, np.transpose(x[i] - mu_1))])]
+            else:
+                sigma += [sum([np.matmul(x[i] - mu_0, np.transpose(x[i] - mu_0))])]
+        sigma = sum(sigma) / len(x)
+
         # Write theta in terms of the parameters
+        theta_0 = (0.5 * ((np.matmul(np.transpose(mu_0) * (sigma ** -1), mu_0)) -
+                          (np.matmul(np.transpose(mu_1) * (sigma ** -1), mu_1)))) - (np.log((1 - phi) / phi))
+        theta = -(sigma ** -1) * (mu_0 - mu_1)
+        self.theta = np.concatenate(([theta_0], theta))
         # *** END CODE HERE ***
 
     def predict(self, x):
@@ -67,7 +93,9 @@ class GDA:
             Outputs of shape (n_examples,).
         """
         # *** START CODE HERE ***
+        return [np.matmul(self.theta, row) for row in x]
         # *** END CODE HERE
+
 
 if __name__ == '__main__':
     main(train_path='ds1_train.csv',

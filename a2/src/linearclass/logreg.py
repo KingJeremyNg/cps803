@@ -14,15 +14,16 @@ def main(train_path, valid_path, save_path):
 
     # *** START CODE HERE ***
     # Train a logistic regression classifier
-    # Plot decision boundary on top of validation set set
-    # Use np.savetxt to save predictions on eval set to save_path
-    x_val, y_val = util.load_dataset(valid_path, add_intercept=True)
-    train_x_inter = util.add_intercept(x_train)
-    val_x_inter = util.add_intercept(x_val)
     model = LogisticRegression()
-    model.fit(train_x_inter, y_train)
-    prediction = model.predict(val_x_inter)
-    np.savetxt(save_path, prediction)
+    model.fit(x_train, y_train)
+
+    # Plot decision boundary on top of validation set set
+    x_val, y_val = util.load_dataset(valid_path, add_intercept=True)
+    util.plot(x_val, y_val, model.theta, "../../output/" + save_path + '.png')
+
+    # Use np.savetxt to save predictions on eval set to save_path
+    prediction = model.predict(x_val)
+    np.savetxt("../../output/" + save_path, prediction)
     # *** END CODE HERE ***
 
 
