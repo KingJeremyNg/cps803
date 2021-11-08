@@ -2,6 +2,7 @@ import numpy as np
 import util
 import matplotlib.pyplot as plt
 
+
 def main(lr, train_path, eval_path, save_path):
     """Problem: Poisson regression with gradient ascent.
 
@@ -16,15 +17,22 @@ def main(lr, train_path, eval_path, save_path):
 
     # *** START CODE HERE ***
     # Fit a Poisson Regression model
+    model = PoissonRegression()
+    model.fit(x_train, y_train)
+
     # Run on the validation set, and use np.savetxt to save outputs to save_path
+    x_eval, y_eval = util.load_dataset(eval_path, add_intercept=True)
+    p_eval = model.predict(x_eval)
+    np.savetxt("../../output/" + save_path, p_eval)
     # *** END CODE HERE ***
     plt.figure()
     # here `y_eval` is the true label for the validation set and `p_eval` is the predicted label.
-    plt.scatter(y_eval,p_eval, alpha=0.4, c='red', label='Ground Truth vs Predicted')
+    plt.scatter(y_eval, p_eval, alpha=0.4, c='red',
+                label='Ground Truth vs Predicted')
     plt.xlabel('Ground Truth')
     plt.ylabel('Predictions')
     plt.legend()
-    plt.savefig('poisson_valid.png')
+    plt.savefig('../../output/poisson_valid.png')
 
 
 class PoissonRegression:
@@ -60,6 +68,22 @@ class PoissonRegression:
             y: Training example labels. Shape (n_examples,).
         """
         # *** START CODE HERE ***
+        self.theta = [0 for i in range(len(x[0]))]
+        # For each iteration
+        for i in range(self.max_iter):
+            # For each feature
+            response = []
+            for j in range(len(self.theta)):
+                sum = 0
+                # For each example
+                for k in range(len(x)):
+                    sum += np.dot(np.exp(np.dot(np.transpose(self.theta), x[k])) - y[k], x[k][j])
+                change = self.step_size * sum
+                self.theta[j] -= change
+                response += [change]
+            if np.linalg.norm(response) < self.eps:
+                break
+        print(self.theta)
         # *** END CODE HERE ***
 
     def predict(self, x):
@@ -72,10 +96,12 @@ class PoissonRegression:
             Floating-point prediction for each input, shape (n_examples,).
         """
         # *** START CODE HERE ***
+        return [np.dot(self.theta, row) for row in x]
         # *** END CODE HERE ***
+
 
 if __name__ == '__main__':
     main(lr=1e-5,
-        train_path='train.csv',
-        eval_path='valid.csv',
-        save_path='poisson_pred.txt')
+         train_path='train.csv',
+         eval_path='valid.csv',
+         save_path='poisson_pred.txt')

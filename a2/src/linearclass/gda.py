@@ -20,7 +20,8 @@ def main(train_path, valid_path, save_path):
 
     # Plot decision boundary on validation set
     x_val, y_val = util.load_dataset(valid_path, add_intercept=True)
-    util.plot(x_val, y_val, model.theta, "../../output/" + save_path + '.png')
+    util.plot(x_val, y_val, model.theta,
+              "../../output/" + save_path[0:-4] + '.png')
 
     # Use np.savetxt to save outputs from validation set to save_path
     prediction = model.predict(x_val)
@@ -76,11 +77,17 @@ class GDA:
                 sigma += [sum([np.matmul(x[i] - mu_0, np.transpose(x[i] - mu_0))])]
         sigma = sum(sigma) / len(x)
 
+        print(f'phi = {phi}')
+        print(f'mu_0 = {mu_0}')
+        print(f'mu_1 = {mu_1}')
+        print(f'simga = {sigma}')
+
         # Write theta in terms of the parameters
         theta_0 = (0.5 * ((np.matmul(np.transpose(mu_0) * (sigma ** -1), mu_0)) -
                           (np.matmul(np.transpose(mu_1) * (sigma ** -1), mu_1)))) - (np.log((1 - phi) / phi))
         theta = -(sigma ** -1) * (mu_0 - mu_1)
         self.theta = np.concatenate(([theta_0], theta))
+        print(f'theta = {self.theta}')
         # *** END CODE HERE ***
 
     def predict(self, x):
@@ -93,7 +100,7 @@ class GDA:
             Outputs of shape (n_examples,).
         """
         # *** START CODE HERE ***
-        return [np.matmul(self.theta, row) for row in x]
+        return [np.dot(self.theta, row) for row in x]
         # *** END CODE HERE
 
 
