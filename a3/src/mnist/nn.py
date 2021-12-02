@@ -22,6 +22,9 @@ def softmax(x):
         A 2d numpy float array containing the softmax results of shape batch_size x number_of_classes
     """
     # *** START CODE HERE ***
+    num = np.exp(x - np.max(x, axis=-1, keepdims=True))
+    den = np.sum(num, axis=-1, keepdims=True)
+    return num / den
     # *** END CODE HERE ***
 
 
@@ -36,6 +39,7 @@ def sigmoid(x):
         A numpy float array containing the sigmoid results
     """
     # *** START CODE HERE ***
+    return 1 / (1 + np.exp(-x))
     # *** END CODE HERE ***
 
 
@@ -66,6 +70,12 @@ def get_initial_params(input_size, num_hidden, num_output):
     """
 
     # *** START CODE HERE ***
+    return {
+        "W1": np.random.normal(loc=0, scale=1, size=(input_size, num_hidden)),
+        "b1": np.zeros((num_hidden, 1)),
+        "W2": np.random.normal(loc=0, scale=1, size=(num_hidden, num_output)),
+        "b2": np.zeros((num_output, 1)),
+    }
     # *** END CODE HERE ***
 
 
@@ -88,6 +98,13 @@ def forward_prop(data, labels, params):
             3. The average loss for these data elements
     """
     # *** START CODE HERE ***
+    activations = sigmoid(
+        np.matmul(data, params["W1"]) + np.transpose(params["b1"]))
+    output = softmax(
+        np.matmul(activations, params["W2"]) + np.transpose(params["b2"]))
+    averageLoss = - \
+        np.sum(np.multiply(labels, np.log(output + 1e-16))) / len(data)
+    return (activations, output, averageLoss)
     # *** END CODE HERE ***
 
 
@@ -112,6 +129,26 @@ def backward_prop(data, labels, params, forward_prop_func):
             W1, W2, b1, and b2
     """
     # *** START CODE HERE ***
+    activations, output, averageLoss = forward_prop_func(data, labels, params)
+
+    w2Change = output - labels
+    w2Gradient = np.matmul(np.transpose(activations), w2Change)
+
+    b2Gradient = np.transpose(np.sum(w2Change, axis=0, keepdims=True))
+
+    w1Change = np.multiply(np.matmul(w2Change, np.transpose(
+        params["W2"])), np.multiply(activations, 1 - activations))
+    w1Gradient = np.matmul(np.transpose(data), w1Change)
+
+    b1Gradient = np.transpose(np.sum(w1Change, axis=0, keepdims=True))
+
+    length = len(data)
+    return {
+        "W1": w1Gradient / length,
+        "b1": b1Gradient / length,
+        "W2": w2Gradient / length,
+        "b2": b2Gradient / length,
+    }
     # *** END CODE HERE ***
 
 
@@ -137,6 +174,26 @@ def backward_prop_regularized(data, labels, params, forward_prop_func, reg):
             W1, W2, b1, and b2
     """
     # *** START CODE HERE ***
+    activations, output, averageLoss = forward_prop_func(data, labels, params)
+
+    w2Change = output - labels
+    w2Gradient = np.matmul(np.transpose(activations), w2Change)
+
+    b2Gradient = np.transpose(np.sum(w2Change, axis=0, keepdims=True))
+
+    w1Change = np.multiply(np.matmul(w2Change, np.transpose(
+        params["W2"])), np.multiply(activations, 1 - activations))
+    w1Gradient = np.matmul(np.transpose(data), w1Change)
+
+    b1Gradient = np.transpose(np.sum(w1Change, axis=0, keepdims=True))
+
+    length = len(data)
+    return {
+        "W1": (w1Gradient / length) + (params["W1"] * reg * 2),
+        "b1": (b1Gradient / length),
+        "W2": (w2Gradient / length) + (params["W2"] * reg * 2),
+        "b2": (b2Gradient / length),
+    }
     # *** END CODE HERE ***
 
 
@@ -160,6 +217,12 @@ def gradient_descent_epoch(train_data, train_labels, learning_rate, batch_size, 
     """
 
     # *** START CODE HERE ***
+    for i in range(int(len(train_data) / batch_size) - 1):
+        data = train_data[i * batch_size: (i + 1) * batch_size]
+        labels = train_labels[i * batch_size: (i + 1) * batch_size]
+        gradient = backward_prop_func(data, labels, params, forward_prop_func)
+        for key in params:
+            params[key] -= gradient[key] * learning_rate
     # *** END CODE HERE ***
 
     # This function does not return anything
